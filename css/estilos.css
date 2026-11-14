@@ -244,6 +244,7 @@ p{margin:0}
 .im-panel h2{font-size:1.6rem;margin-top:.4rem;outline:none}
 .im-dest{display:flex;align-items:center;gap:.5rem;color:#E9A070;font-weight:700;font-size:.95rem}
 .im-dest i{width:10px;height:10px;border-radius:50%;background:#E9A070}
+.im-note{font-size:.85rem;font-style:italic;color:#8E9CC0 !important}
 .im-story{font-family:var(--display);font-size:1.15rem;font-weight:600;color:#F4D8BC;margin-top:.3rem}
 .im-dates{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin:1rem 0 0}
 .im-dates dt{color:#9FB0D0;font-size:.8rem}

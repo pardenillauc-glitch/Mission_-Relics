@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Mission Relics</title>
-<meta name="description" content="Explora en 3D la Luna, Marte, Júpiter y Saturno, y conoce las misiones de NASA a través de cortometrajes animados y videojuegos educativos. Proyecto para el NASA Space Apps Challenge 2026">
+<meta name="description" content="Explora en 3D la Luna, Marte, Júpiter y Saturno, y conoce las misiones de NASA a través de cortometrajes animados y videojuegos educativos. Proyecto para el NASA Space Apps Challenge 2026.">
 <meta name="theme-color" content="#141A33">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="canonical" href="https://missionrelics.earth/">
@@ -51,7 +51,7 @@
     <p class="intro-steps">Conocer → Comprender → Experimentar</p>
     <a class="btn" href="#explorar">Iniciar</a>
   </div>
-  <div class="wrap intro-foot">Proyecto para el NASA Space Apps Challenge 2026 V 0.6.1. <a href="#creditos">Créditos y fuentes</a></div>
+  <div class="wrap intro-foot">Proyecto para el NASA Space Apps Challenge 2026. <a href="#creditos">Créditos y fuentes</a></div>
 </main>
 
 
@@ -121,7 +121,9 @@
       <ul>
         <li>Mapa de la Luna: Lunar Reconnaissance Orbiter Camera (LROC), CGI Moon Kit. NASA/GSFC/Arizona State University. <a href="https://svs.gsfc.nasa.gov/4720">svs.gsfc.nasa.gov/4720</a></li>
         <li>Mapa de Marte: imágenes Viking procesadas por USGS. NASA/JPL-Caltech. <a href="https://science.nasa.gov/3d-resources/mars">science.nasa.gov/3d-resources/mars</a></li>
-        <li>Texturas de la Tierra, Júpiter y Saturno, y modelo 3D de Ingenuity: NASA 3D Resources, NASA/JPL-Caltech. <a href="https://science.nasa.gov/3d-resources/">science.nasa.gov/3d-resources</a></li>
+        <li>Texturas de la Tierra, Júpiter y Saturno: NASA 3D Resources. <a href="https://science.nasa.gov/3d-resources/">science.nasa.gov/3d-resources</a></li>
+        <li>Modelos 3D de Ingenuity, Voyager, Cassini-Huygens y Opportunity (MER-B): NASA 3D Resources, NASA/JPL-Caltech. <a href="https://github.com/nasa/NASA-3D-Resources">github.com/nasa/NASA-3D-Resources</a></li>
+        <li>Los modelos del rover lunar, Sojourner y DART son esquemáticos y provisionales, hechos para esta plataforma.</li>
       </ul>
     </section>
     <section>
@@ -133,52 +135,41 @@
 
 <!-- ===== 4a. INMERSIVA (Ingenuity, plantilla de referencia) ===== -->
 <main id="view-inmersiva" class="explore immersive" hidden>
-  <div class="ex-labels"><span class="pin jezero" id="im-jezero" aria-hidden="true"><i></i><span>Cráter Jezero</span></span></div>
-  <a class="ex-back im-back" href="#explorar">‹ Volver a Marte</a>
+  <div class="ex-labels"><span class="pin jezero" id="im-sitio" aria-hidden="true"><i></i><span></span></span></div>
+  <a class="ex-back im-back" href="#explorar">‹ Volver al mapa</a>
   <p class="im-loading" id="im-loading">Cargando modelo 3D…</p>
-  <aside class="im-panel" aria-label="Ingenuity">
+  <aside class="im-panel" aria-label="Misión">
     <div id="im-options">
-      <p class="im-dest"><i></i>Marte, cráter Jezero</p>
-      <h1 tabindex="-1">Ingenuity</h1>
-      <p class="im-story">«Mañana volveré a volar»</p>
-      <dl class="im-dates"><div><dt>Lanzamiento</dt><dd>30 jul 2020</dd></div><div><dt>Fin de misión</dt><dd>25 ene 2024</dd></div></dl>
+      <p class="im-dest"><i></i><span id="im-dest"></span></p>
+      <h1 tabindex="-1" id="im-name"></h1>
+      <p class="im-story" id="im-story"></p>
+      <dl class="im-dates"><div><dt>Lanzamiento</dt><dd id="im-launch"></dd></div><div><dt>Fin de misión</dt><dd id="im-end"></dd></div></dl>
       <div class="im-opts">
         <button type="button" class="im-opt" id="im-opt-historia">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 8.5v7l6-3.5z" fill="currentColor"/></svg>
-          <span><strong>Historia</strong><small>Cortometraje «Mañana volveré a volar»</small></span>
+          <span><strong>Historia</strong><small></small></span>
         </button>
         <button type="button" class="im-opt" id="im-opt-juego">
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="7" width="19" height="11" rx="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M7.5 10.5v4M5.5 12.5h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="15.5" cy="11.5" r="1.2" fill="currentColor"/><circle cx="18" cy="13.8" r="1.2" fill="currentColor"/></svg>
-          <span><strong>Minijuego</strong><small>Pilota a Ingenuity sobre Jezero</small></span>
+          <span><strong>Minijuego</strong><small></small></span>
         </button>
         <button type="button" class="im-opt" id="im-opt-3d">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l8 4.6v9.2l-8 4.6-8-4.6V7.4z M4 7.4l8 4.6 8-4.6 M12 12v9.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-          <span><strong>Modelo 3D interactivo</strong><small>Gira el helicóptero y explora sus piezas</small></span>
+          <span><strong>Modelo 3D interactivo</strong><small>Gira el equipo y explora sus piezas</small></span>
         </button>
       </div>
-      <dl class="im-facts">
-        <div><dt>masa</dt><dd>1.8 kg</dd></div>
-        <div><dt>vuelos en casi 3 años</dt><dd>72</dd></div>
-        <div><dt>giro de los rotores</dt><dd>≈3,000 rpm</dd></div>
-        <div><dt>tiempo total de vuelo</dt><dd>+2 h</dd></div>
-      </dl>
-      <p class="im-src">Datos: NASA NSSDCA Master Catalog, Mars 2020 (COSPAR 2020-052A).</p>
+      <dl class="im-facts" id="im-facts"></dl>
+      <p class="im-src" id="im-src"></p>
     </div>
     <div id="im-inspect" hidden>
       <button type="button" class="ex-back" id="im-back-options">‹ Volver a las opciones</button>
       <h2 tabindex="-1">Modelo 3D interactivo</h2>
-      <p class="im-hint">Modelo oficial de NASA/JPL-Caltech. Elige una pieza para iluminarla.</p>
-      <div class="parts" role="group" aria-label="Piezas de Ingenuity">
-        <button type="button" data-ipart="rotores" aria-pressed="false">Rotores</button>
-        <button type="button" data-ipart="panel" aria-pressed="false">Panel solar</button>
-        <button type="button" data-ipart="fuselaje" aria-pressed="false">Fuselaje</button>
-        <button type="button" data-ipart="mastil" aria-pressed="false">Mástil</button>
-        <button type="button" data-ipart="patas" aria-pressed="false">Patas</button>
-      </div>
-      <div class="part-info" id="im-part-info" aria-live="polite"><h3>Elige una pieza</h3><p>Se iluminará en el modelo. Arrastra para girar y usa la rueda o pellizca para acercarte.</p></div>
+      <p class="im-hint" id="im-model-credit"></p>
+      <div class="parts" role="group" aria-label="Piezas del equipo" id="im-parts"></div>
+      <div class="part-info" id="im-part-info" aria-live="polite"></div>
     </div>
   </aside>
-  <p class="ex-credit">Modelo 3D: NASA/JPL-Caltech (NASA 3D Resources). Mapa de Marte: NASA/JPL-Caltech/USGS.</p>
+  <p class="ex-credit" id="im-credit"></p>
 </main>
 <dialog class="im-dialog" id="im-dialog" aria-label="Contenido de la misión"></dialog>
 

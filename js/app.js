@@ -826,86 +826,197 @@ const explore = (() => {
 })();
 
 /* =========================================================
-   PÁGINA INMERSIVA DE INGENUITY (plantilla de referencia)
+   PÁGINAS INMERSIVAS (una plantilla para todas las misiones)
    ========================================================= */
-const PART_NODES = {
-  rotores:["rotors_01", "rotors_02"], panel:["solar_panel"], fuselaje:["bus"],
-  mastil:["parts_01", "parts_02"], patas:["leg_01", "leg_02", "leg_03", "leg_04"]
+const proceduralModels = {
+  // Modelos esquemáticos provisionales (escala aproximada en metros)
+  lrv(mat){
+    const g = new THREE.Group(), parts = { ruedas:[], antena:[], controles:[], chasis:[] };
+    const add = (p, geo, m, x, y, z, rx = 0, ry = 0, rz = 0) => { const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); o.rotation.set(rx, ry, rz); g.add(o); parts[p].push(o); return o; };
+    const metal = () => mat(0xA8ABB0, .7, .4), dark = () => mat(0x2A2A30, .3, .7);
+    add("chasis", new THREE.BoxGeometry(2.3, .08, 1.15), metal(), 0, .52, 0);
+    add("chasis", new THREE.BoxGeometry(2.0, .18, .9), mat(0x8E9196, .6, .5), 0, .44, 0);
+    [[-1.12, .98], [1.12, .98], [-1.12, -.98], [1.12, -.98]].forEach(([x, z]) => {
+      add("ruedas", new THREE.CylinderGeometry(.41, .41, .23, 28), mat(0xB59E6E, .65, .45), x, .41, z, Math.PI / 2);
+      add("ruedas", new THREE.CylinderGeometry(.16, .16, .26, 16), dark(), x, .41, z, Math.PI / 2);
+      add("chasis", new THREE.CylinderGeometry(.45, .45, .28, 20, 1, true, -Math.PI / 2, Math.PI), mat(0x8F949B, .3, .6), x, .43, z, Math.PI / 2, 0, 0).material.side = THREE.DoubleSide;
+    });
+    [[-.05, .3], [-.05, -.3]].forEach(([x, z]) => {
+      add("controles", new THREE.BoxGeometry(.48, .05, .46), mat(0x6E7A8A, .2, .8), x, .6, z);
+      add("controles", new THREE.BoxGeometry(.05, .42, .46), mat(0x6E7A8A, .2, .8), x - .24, .81, z);
+    });
+    add("controles", new THREE.BoxGeometry(.28, .32, .2), dark(), .45, .72, 0);
+    add("controles", new THREE.CylinderGeometry(.015, .015, .25, 8), dark(), .3, .8, 0);
+    add("antena", new THREE.CylinderGeometry(.025, .025, 1.0, 8), metal(), .95, 1.05, -.35);
+    const dish = add("antena", new THREE.ConeGeometry(.48, .2, 28, 1, true), mat(0xEDEDED, .3, .5), .95, 1.62, -.35, Math.PI);
+    dish.material.side = THREE.DoubleSide;
+    add("antena", new THREE.BoxGeometry(.2, .14, .16), mat(0xD9D9D9, .4, .5), 1.05, 1.0, .3);
+    add("antena", new THREE.CylinderGeometry(.02, .02, .7, 8), metal(), 1.0, .85, .3);
+    return { root:g, parts };
+  },
+  sojourner(mat){
+    const g = new THREE.Group(), parts = { panel:[], ruedas:[], cuerpo:[], apxs:[], antena:[] };
+    const add = (p, geo, m, x, y, z, rx = 0, ry = 0, rz = 0) => { const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); o.rotation.set(rx, ry, rz); g.add(o); parts[p].push(o); return o; };
+    add("cuerpo", new THREE.BoxGeometry(.46, .14, .3), mat(0xD8CFBC, .5, .45), 0, .22, 0);
+    add("panel", new THREE.BoxGeometry(.6, .015, .46), mat(0x1F2E5A, .5, .3), 0, .305, 0);
+    [-.24, 0, .24].forEach(x => [-.24, .24].forEach(z => {
+      add("ruedas", new THREE.CylinderGeometry(.065, .065, .08, 20), mat(0x9EA2A8, .7, .4), x, .065, z, Math.PI / 2);
+      add("ruedas", new THREE.BoxGeometry(.04, .14, .015), mat(0x8A8D92, .6, .5), x, .14, z * .8);
+    }));
+    add("ruedas", new THREE.BoxGeometry(.5, .015, .015), mat(0x8A8D92, .6, .5), 0, .19, .2);
+    add("ruedas", new THREE.BoxGeometry(.5, .015, .015), mat(0x8A8D92, .6, .5), 0, .19, -.2);
+    add("antena", new THREE.CylinderGeometry(.006, .006, .3, 8), mat(0x2A2A30, .4, .6), -.2, .45, .12);
+    add("cuerpo", new THREE.BoxGeometry(.03, .04, .12), mat(0x2A2A30, .4, .6), .24, .22, 0);
+    add("apxs", new THREE.CylinderGeometry(.03, .03, .08, 16), mat(0xC8A250, .7, .35), -.28, .18, 0, 0, 0, Math.PI / 2);
+    return { root:g, parts };
+  },
+  dart(mat){
+    const g = new THREE.Group(), parts = { paneles:[], camara:[], cuerpo:[], antena:[], liciacube:[] };
+    const add = (p, geo, m, x, y, z, rx = 0, ry = 0, rz = 0) => { const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); o.rotation.set(rx, ry, rz); g.add(o); parts[p].push(o); return o; };
+    add("cuerpo", new THREE.BoxGeometry(1.2, 1.3, 1.3), mat(0xC9A04B, .8, .3), 0, 0, 0);
+    [-1, 1].forEach(s => {
+      add("paneles", new THREE.BoxGeometry(.08, .08, .9), mat(0x9A9A9A, .7, .4), 0, 0, s * 1.1);
+      add("paneles", new THREE.BoxGeometry(2.4, .02, 8.5), mat(0x23305E, .5, .3), 0, 0, s * 5.8);
+      add("paneles", new THREE.CylinderGeometry(.12, .12, 2.4, 16), mat(0xB0B0B0, .6, .4), 0, 0, s * 10.05, 0, 0, Math.PI / 2);
+    });
+    add("antena", new THREE.CylinderGeometry(.55, .55, .05, 32), mat(0xE0E0E0, .4, .4), 0, .7, 0);
+    add("camara", new THREE.CylinderGeometry(.16, .16, .55, 20), mat(0x2A2A30, .4, .5), .85, .2, 0, 0, 0, Math.PI / 2);
+    add("cuerpo", new THREE.CylinderGeometry(.18, .26, .3, 20), mat(0x55585E, .6, .5), 0, -.8, 0);
+    add("liciacube", new THREE.BoxGeometry(.12, .24, .36), mat(0xC9CCD2, .5, .4), 2.2, .9, 2.2);
+    add("liciacube", new THREE.BoxGeometry(.02, .24, .9), mat(0x23305E, .5, .3), 2.2, .9, 2.2);
+    return { root:g, parts };
+  }
 };
+
 const inmersiva = (() => {
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const stage = () => $("#view-inmersiva");
   const V = (x, y, z) => new THREE.Vector3(x, y, z);
-  let renderer, scene, camera, controls, inited = false, tween = null, mode = "options";
-  let pivot = null, modelPos = V(0, 0, 0), modelGoal = V(0, 0, 0), rotors = [], parts = {}, mars, jezero, axisX = V(1, 0, 0), poses;
+  let renderer, scene, camera, controls, inited = false, tween = null, mode = "options", texLoader;
+  let current = null, cfg = null, poses, modelPos = V(0, 0, 0), modelGoal = V(0, 0, 0);
+  const scenes = {}, models = {}, siteAnchor = new THREE.Object3D();
+  let starsSky, starsAll;
 
   function init(){
     inited = true;
     const box = stage();
     if (!window.THREE){ box.insertAdjacentHTML("beforeend", `<div class="ex-fallback"><p>No se pudo cargar la escena 3D. Revisa tu conexión y recarga la página.</p></div>`); return; }
     scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(38, 1, .02, 500);
+    camera = new THREE.PerspectiveCamera(38, 1, .02, 600);
     renderer = new THREE.WebGLRenderer({ antialias:true });
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     renderer.setClearColor(0x0B1028);
     if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
     box.prepend(renderer.domElement);
-
+    texLoader = new THREE.TextureLoader();
     scene.add(new THREE.HemisphereLight(0xfff3e6, 0x5a3220, .55));
     const sun = new THREE.DirectionalLight(0xfff1dc, 1.5); sun.position.set(-4, 5, 4); scene.add(sun);
     const rim = new THREE.DirectionalLight(0x9db8ff, .5); rim.position.set(3, 1, -4); scene.add(rim);
-
-    // Estrellas
-    const g = new THREE.BufferGeometry(), pts = [], r = rng(17);
-    for (let i = 0; i < 1800; i++){ const v = V(r() - .5, Math.abs(r() - .3), r() - .5).normalize().multiplyScalar(120 + r() * 60); pts.push(v.x, v.y, v.z); }
-    g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
-    scene.add(new THREE.Points(g, new THREE.PointsMaterial({ color:0xF3EBDD, size:1.5, sizeAttenuation:false, transparent:true, opacity:.75 })));
-
-    // Marte visto de cerca, con el cráter Jezero hacia arriba
-    const loader = new THREE.TextureLoader();
-    const mat = new THREE.MeshStandardMaterial({ color:0x8a4a2a, roughness:1, metalness:0, bumpScale:.03 });
-    loader.load(TEX.mars, t => { if (THREE.sRGBEncoding) t.encoding = THREE.sRGBEncoding; t.anisotropy = renderer.capabilities.getMaxAnisotropy(); mat.map = t; mat.bumpMap = t; mat.color.set(0xffffff); mat.needsUpdate = true; });
-    mars = new THREE.Mesh(new THREE.SphereGeometry(6, 160, 120), mat);
-    const local = latLon(18.44, 77.45, 1).normalize();
-    mars.quaternion.setFromUnitVectors(local, V(.12, .99, .06).normalize());
-    scene.add(mars);
-    jezero = new THREE.Object3D(); jezero.position.copy(latLon(18.44, 77.45, 6)); mars.add(jezero);
-    const atm = new THREE.Mesh(new THREE.SphereGeometry(6 * 1.045, 96, 64), new THREE.ShaderMaterial({
-      uniforms:{ c:{ value:new THREE.Color(0xE9A070) } },
-      vertexShader:"varying vec3 vN; void main(){ vN = normalize(normalMatrix * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }",
-      fragmentShader:"uniform vec3 c; varying vec3 vN; void main(){ float i = pow(max(0.0, 0.72 - dot(vN, vec3(0.0,0.0,1.0))), 2.4); gl_FragColor = vec4(c, 1.0) * i; }",
-      side:THREE.BackSide, blending:THREE.AdditiveBlending, transparent:true, depthWrite:false }));
-    mars.add(atm);
-
+    starsSky = stars(1800, true); starsAll = stars(2600, false);
     controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true; controls.enablePan = false; controls.enabled = false;
-    controls.minDistance = 1.1; controls.maxDistance = 4.5;
-
-    loadModel();
+    controls.minDistance = 1.0; controls.maxDistance = 5;
     bindUI();
-    layout();
     loop();
   }
 
-  function loadModel(){
-    new THREE.GLTFLoader().load(MODELOS.ingenuity, gltf => {
-      const root = gltf.scene;
-      root.updateMatrixWorld(true);
-      const box = new THREE.Box3().setFromObject(root), size = box.getSize(V(0, 0, 0)), c = box.getCenter(V(0, 0, 0));
-      const s = 1.55 / Math.max(size.x, size.y, size.z);
-      root.scale.setScalar(s); root.position.set(-c.x * s, -box.min.y * s, -c.z * s);
-      pivot = new THREE.Group(); pivot.add(root); scene.add(pivot);
-      pivot.position.copy(modelPos);
-      rotors = ["rotors_01", "rotors_02"].map(n => root.getObjectByName(n)).filter(Boolean);
-      const names = new Set(Object.values(PART_NODES).flat());
+  function stars(n, upper){
+    const g = new THREE.BufferGeometry(), pts = [], r = rng(upper ? 17 : 29);
+    for (let i = 0; i < n; i++){ const v = V(r() - .5, upper ? Math.abs(r() - .3) : r() - .5, r() - .5).normalize().multiplyScalar(120 + r() * 60); pts.push(v.x, v.y, v.z); }
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
+    const p = new THREE.Points(g, new THREE.PointsMaterial({ color:0xF3EBDD, size:1.5, sizeAttenuation:false, transparent:true, opacity:.8 }));
+    p.visible = false; scene.add(p); return p;
+  }
+  function tex(url, cb){ texLoader.load(url, t => { if (THREE.sRGBEncoding) t.encoding = THREE.sRGBEncoding; t.anisotropy = renderer.capabilities.getMaxAnisotropy(); cb(t); }); }
+  function glow(color, R, power){
+    return new THREE.Mesh(new THREE.SphereGeometry(R, 96, 64), new THREE.ShaderMaterial({
+      uniforms:{ c:{ value:new THREE.Color(color) } },
+      vertexShader:"varying vec3 vN; void main(){ vN = normalize(normalMatrix * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }",
+      fragmentShader:`uniform vec3 c; varying vec3 vN; void main(){ float i = pow(max(0.0, 0.72 - dot(vN, vec3(0.0,0.0,1.0))), ${power.toFixed(1)}); gl_FragColor = vec4(c, 1.0) * i; }`,
+      side:THREE.BackSide, blending:THREE.AdditiveBlending, transparent:true, depthWrite:false }));
+  }
+
+  // Escenarios de fondo
+  function getScene(kind){
+    if (scenes[kind]) return scenes[kind];
+    const group = new THREE.Group(); scene.add(group);
+    const s = { group, kind };
+    if (kind === "marte" || kind === "luna"){
+      const R = 6, mat = new THREE.MeshStandardMaterial({ color:0x777777, roughness:1, metalness:0, bumpScale:.03 });
+      tex(kind === "marte" ? TEX.mars : TEX.moon, t => { mat.map = t; mat.bumpMap = t; mat.color.set(0xffffff); mat.needsUpdate = true; });
+      const mesh = new THREE.Mesh(new THREE.SphereGeometry(R, 160, 120), mat); group.add(mesh);
+      if (kind === "marte") mesh.add(glow(0xE9A070, R * 1.045, 2.4)); else mesh.add(glow(0x8899BB, R * 1.02, 4.0));
+      Object.assign(s, { mesh, R, surface:true, stars:starsSky });
+    } else if (kind === "saturno"){
+      const R = 4.2, mat = new THREE.MeshStandardMaterial({ color:0xb8a27a, roughness:1 });
+      tex(TEX.saturn, t => { mat.map = t; mat.color.set(0xBDB3A0); mat.needsUpdate = true; });
+      const tilt = new THREE.Group(); tilt.rotation.set(.38, 0, -.22); group.add(tilt);
+      const mesh = new THREE.Mesh(new THREE.SphereGeometry(R, 128, 96), mat); tilt.add(mesh);
+      const inner = R * 1.239, outer = R * 2.269, rg = new THREE.RingGeometry(inner, outer, 200, 1), pos = rg.attributes.position, uv = rg.attributes.uv;
+      for (let i = 0; i < pos.count; i++){ const rr = Math.hypot(pos.getX(i), pos.getY(i)); uv.setXY(i, (rr - inner) / (outer - inner), .5); }
+      const rt = new THREE.CanvasTexture(ringTexture()); if (THREE.sRGBEncoding) rt.encoding = THREE.sRGBEncoding;
+      const ring = new THREE.Mesh(rg, new THREE.MeshBasicMaterial({ map:rt, side:THREE.DoubleSide, transparent:true, depthWrite:false }));
+      ring.rotation.x = -Math.PI / 2; tilt.add(ring);
+      const anchor = new THREE.Object3D(); anchor.position.set(0, R * 1.02, 0); tilt.add(anchor);
+      Object.assign(s, { mesh, R, label:"Saturno", anchor, stars:starsAll });
+    } else if (kind === "asteroide"){
+      const rock = (r0, seed, detail) => {
+        const geo = new THREE.IcosahedronGeometry(r0, detail), p = geo.attributes.position, rr = rng(seed);
+        const k = [0,1,2,3,4,5].map(() => [rr() * 4 + 1, rr() * 6, rr() * .12 + .04]);
+        for (let i = 0; i < p.count; i++){
+          const v = V(p.getX(i), p.getY(i), p.getZ(i)), n = v.clone().normalize();
+          let d = 1; k.forEach(([f, ph, a], j) => { d += a * Math.sin(f * (j % 3 === 0 ? n.x : j % 3 === 1 ? n.y : n.z) * 3 + ph) * Math.cos(f * n.y * 2 + ph); });
+          v.copy(n.multiplyScalar(r0 * d)); p.setXYZ(i, v.x, v.y, v.z);
+        }
+        geo.computeVertexNormals();
+        return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color:0x45403A, roughness:1, flatShading:true }));
+      };
+      const didymos = rock(1.25, 3, 5), dimorphos = rock(.3, 8, 4);
+      didymos.position.set(-2.3, -1.5, -3.2); dimorphos.position.set(-.45, -.95, -2.1);
+      group.add(didymos, dimorphos);
+      Object.assign(s, { label:"Dimorphos", anchor:dimorphos, stars:starsAll });
+    } else {
+      const core = new THREE.Mesh(new THREE.SphereGeometry(.7, 24, 16), new THREE.MeshBasicMaterial({ color:0xFFF4D6 }));
+      core.position.set(-42, 14, -90);
+      group.add(core);
+      Object.assign(s, { label:"El Sol", anchor:core, stars:starsAll });
+    }
+    scenes[kind] = s;
+    return s;
+  }
+
+  // Modelos de cada misión
+  function matFactory(){ return (color, metal = .3, rough = .6) => new THREE.MeshStandardMaterial({ color, metalness:metal, roughness:rough }); }
+  function finishModel(id, root, parts, giro){
+    const mc = INMERSIVA[id].modelo;
+    if (mc.rot) root.rotation.set(mc.rot[0], mc.rot[1], mc.rot[2]);
+    root.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(root), size = box.getSize(V(0, 0, 0)), c = box.getCenter(V(0, 0, 0));
+    const s = (INMERSIVA[id].modelo.fit || 1.55) / Math.max(size.x, size.y, size.z);
+    root.scale.setScalar(s); root.position.set(-c.x * s, mc.centrar ? -c.y * s + .4 : -box.min.y * s, -c.z * s);
+    const pivot = new THREE.Group(); pivot.add(root); scene.add(pivot);
+    for (const list of Object.values(parts)) list.forEach(m => { m.material = m.material.clone(); });
+    models[id] = { pivot, parts, giro:(giro || []).map(([n, sp]) => [root.getObjectByName(n), sp]).filter(([o]) => o) };
+    pivot.visible = current === id;
+    if (current === id) $("#im-loading").hidden = true;
+  }
+  function loadModel(id){
+    if (models[id]) return;
+    models[id] = "loading";
+    const m = INMERSIVA[id].modelo;
+    if (m.proc){
+      const { root, parts } = proceduralModels[m.proc](matFactory());
+      finishModel(id, root, parts, null); return;
+    }
+    new THREE.GLTFLoader().load(m.url, gltf => {
+      const root = gltf.scene, parts = {}, names = new Set(Object.values(m.partes || {}).flat());
       const collect = (obj, out) => obj.children.forEach(ch => { if (names.has(ch.name)) return; if (ch.isMesh) out.push(ch); collect(ch, out); });
-      for (const [k, list] of Object.entries(PART_NODES)){
+      for (const [k, list] of Object.entries(m.partes || {})){
         parts[k] = [];
         list.forEach(n => { const o = root.getObjectByName(n); if (!o) return; if (o.isMesh) parts[k].push(o); collect(o, parts[k]); });
-        parts[k].forEach(m => { m.material = m.material.clone(); });
       }
-      $("#im-loading").hidden = true;
-    }, undefined, () => { $("#im-loading").textContent = "No se pudo cargar el modelo 3D. Revisa que exista assets/modelos/ingenuity.glb."; });
+      finishModel(id, root, parts, m.giro);
+    }, undefined, () => { if (current === id) $("#im-loading").textContent = "No se pudo cargar el modelo 3D."; });
   }
 
   function layout(){
@@ -914,15 +1025,19 @@ const inmersiva = (() => {
     renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
     const tall = camera.aspect < .9;
     poses = tall ? {
-      options:{ cam:V(0, 1.0, 6.2), tgt:V(0, .7, 0), model:V(0, 1.3, 0) },
-      inspect:{ cam:V(0, 1.25, 4.2), tgt:V(0, .95, 0), model:V(0, 1.0, 0) },
+      options:{ cam:V(0, 1.0, 7.0), tgt:V(0, .7, 0), model:V(0, 1.3, 0) },
+      inspect:{ cam:V(0, 1.25, 4.6), tgt:V(0, .95, 0), model:V(0, 1.0, 0) },
       enter:{ cam:V(0, 3.6, 11), tgt:V(0, .8, 0) }
     } : {
       options:{ cam:V(.95, .7, 4.3), tgt:V(.8, .45, 0), model:V(-.2, .15, 0) },
       inspect:{ cam:V(.6, .75, 2.6), tgt:V(.35, .45, 0), model:V(0, .15, 0) },
       enter:{ cam:V(.9, 3.4, 11), tgt:V(.75, .3, 0) }
     };
-    mars.position.set(0, tall ? -6.3 : -6.75, -1.6);
+    for (const s of Object.values(scenes)){
+      if (s.surface) s.group.position.set(0, tall ? -6.3 : -6.75, -1.6);
+      else if (s.kind === "saturno") s.group.position.set(tall ? 1.0 : -2.6, tall ? -8.6 : -7.4, -11);
+      else if (s.kind === "asteroide") s.group.position.set(tall ? 1.4 : -.6, tall ? -.4 : -.5, -3);
+    }
     modelGoal.copy(poses[mode].model);
     if (!tween){ camera.position.copy(poses[mode].cam); controls.target.copy(poses[mode].tgt); camera.lookAt(controls.target); }
   }
@@ -937,43 +1052,65 @@ const inmersiva = (() => {
     };
   }
 
-  function setMode(next){
+  function setMode(next, quiet){
     mode = next;
     $("#im-options").hidden = next !== "options"; $("#im-inspect").hidden = next !== "inspect";
     stage().classList.toggle("inspecting", next === "inspect");
     $(".im-panel").scrollTop = 0;
     controls.enabled = false;
     modelGoal.copy(poses[next].model);
+    if (quiet) return;
     tweenTo(poses[next], 1100, () => { if (next === "inspect"){ controls.target.copy(poses.inspect.tgt); controls.enabled = true; } });
     if (next === "options") highlight(null);
     (next === "inspect" ? $("#im-inspect h2") : $("#im-options h1")).focus({ preventScroll:true });
   }
 
   function highlight(key){
-    const glow = new THREE.Color(0xE39A5E), none = new THREE.Color(0);
-    for (const [k, list] of Object.entries(parts)) list.forEach(m => { if (!m.material.emissive) return; m.material.emissive.copy(k === key ? glow : none); m.material.emissiveIntensity = k === key ? .55 : 0; });
+    const md = models[current];
+    const glowC = new THREE.Color(0xE39A5E), none = new THREE.Color(0);
+    if (md && md.parts) for (const [k, list] of Object.entries(md.parts)) list.forEach(m => { if (!m.material.emissive) return; m.material.emissive.copy(k === key ? glowC : none); m.material.emissiveIntensity = k === key ? .55 : 0; });
     document.querySelectorAll("[data-ipart]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.ipart === key)));
-    const info = $("#im-part-info");
-    if (key){ const [t, d] = PART_INFO[key]; info.innerHTML = `<h3>${t}</h3><p>${d}</p>`; }
-    else info.innerHTML = `<h3>Elige una pieza</h3><p>Se iluminará en el modelo. Arrastra para girar y usa la rueda o pellizca para acercarte.</p>`;
+    const info = $("#im-part-info"), comp = cfg.componentes.find(c => c.id === key);
+    const lit = md && md.parts && md.parts[key] && md.parts[key].length;
+    if (comp) info.innerHTML = `<h3>${comp.t}</h3><p>${comp.d}</p>${lit ? "" : `<p class="im-note">Esta pieza aún no se ilumina en el modelo.</p>`}`;
+    else info.innerHTML = `<h3>Elige una pieza</h3><p>Arrastra para girar el modelo y usa la rueda o pellizca para acercarte.</p>`;
+  }
+
+  function fillPanel(m){
+    const st = m.story;
+    $("#im-dest").textContent = cfg.lugar;
+    $("#im-name").textContent = m.name;
+    $("#im-story").textContent = st && st.title ? `«${st.title}»` : st && st.theme ? st.theme : "Historia por escribir";
+    $("#im-launch").textContent = m.launchLabel; $("#im-end").textContent = m.endLabel;
+    $("#im-opt-historia small").textContent = st && st.title ? `Cortometraje «${st.title}»` : "Cortometraje en preparación";
+    $("#im-opt-juego small").textContent = cfg.juego;
+    $("#im-facts").innerHTML = m.facts.slice(0, 4).map(([v, l]) => `<div><dt>${l}</dt><dd>${v}</dd></div>`).join("");
+    $("#im-src").textContent = cfg.src;
+    $("#im-model-credit").textContent = cfg.credito;
+    $("#im-parts").innerHTML = cfg.componentes.map(c => `<button type="button" data-ipart="${c.id}" aria-pressed="false">${c.t}</button>`).join("");
+    document.querySelectorAll("[data-ipart]").forEach(b => b.addEventListener("click", () => highlight(b.getAttribute("aria-pressed") === "true" ? null : b.dataset.ipart)));
+    $("#im-credit").textContent = cfg.credito.split(";")[0] + ".";
+    stage().style.setProperty("--pc", `var(--c-${m.c})`);
   }
 
   function openDialog(kind){
-    const m = MISSIONS.find(x => x.id === "ingenuity"), d = $("#im-dialog"), md = m.media || {};
+    const m = MISSIONS.find(x => x.id === current), d = $("#im-dialog"), md = m.media || {}, st = m.story;
     if (kind === "historia"){
+      const title = st && st.title ? `Historia: «${st.title}»` : `Historia de ${m.name}`;
+      const chapters = m.chapters ? `<ol class="chapters">${m.chapters.map(([n, t]) => `<li><span class="num">${n}</span>${t ? `<span>${t}</span>` : `<span class="pending">Por confirmar</span>`}</li>`).join("")}</ol>` : "";
+      const cast = m.cast ? `<div class="dlg-cast">${m.cast.map(c => `<div><h3>${c.name}</h3><p class="role">${c.role}</p><p>${c.desc}</p><blockquote>${c.quote}</blockquote></div>`).join("")}</div>` : `<p class="dlg-lede" style="margin-top:1.2rem">${m.summary}</p>`;
       d.innerHTML = `
-        <div class="dlg-head"><h2>Historia: «${m.story.title}»</h2><button type="button" class="dlg-close" aria-label="Cerrar">✕</button></div>
-        <div class="screen" id="dlg-video"><div class="screen-msg"><strong>En producción</strong><p>Aquí podrás ver el cortometraje completo, de unos cinco minutos.</p></div></div>
-        <ol class="chapters">${m.chapters.map(([n, t]) => `<li><span class="num">${n}</span>${t ? `<span>${t}</span>` : `<span class="pending">Por confirmar</span>`}</li>`).join("")}</ol>
-        <div class="dlg-cast">${m.cast.map(c => `<div><h3>${c.name}</h3><p class="role">${c.role}</p><p>${c.desc}</p><blockquote>${c.quote}</blockquote></div>`).join("")}</div>`;
+        <div class="dlg-head"><h2>${title}</h2><button type="button" class="dlg-close" aria-label="Cerrar">✕</button></div>
+        <div class="screen" id="dlg-video"><div class="screen-msg"><strong>${m.live ? "En producción" : "Próximamente"}</strong><p>${m.live ? "Aquí podrás ver el cortometraje completo, de unos cinco minutos." : "El cortometraje de esta misión se agregará más adelante."}</p></div></div>
+        ${chapters}${cast}`;
       if (md.video) d.querySelector("#dlg-video").innerHTML = `<video controls preload="metadata" playsinline src="${md.video}"></video>`;
-      else if (md.youtube) d.querySelector("#dlg-video").innerHTML = `<iframe src="${md.youtube}" title="Cortometraje" allow="fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+      else if (md.youtube) d.querySelector("#dlg-video").innerHTML = `<iframe src="${md.youtube}" title="Cortometraje de ${m.name}" allow="fullscreen; picture-in-picture" allowfullscreen></iframe>`;
     } else {
       d.innerHTML = `
-        <div class="dlg-head"><h2>Minijuego: pilota a Ingenuity</h2><button type="button" class="dlg-close" aria-label="Cerrar">✕</button></div>
-        <p class="dlg-lede">Despega desde el cráter Jezero, cuida tu batería y aterriza en terreno seguro.</p>
-        <div class="screen" id="dlg-game"><div class="screen-msg"><strong>En desarrollo</strong><p>Podrás jugarlo aquí mismo, sin instalar nada.</p>${md.game ? `<button type="button" class="btn" id="dlg-start">Iniciar juego</button>` : ""}</div></div>`;
-      if (md.game) d.querySelector("#dlg-start").addEventListener("click", () => { d.querySelector("#dlg-game").innerHTML = `<iframe src="${md.game}" title="Minijuego de Ingenuity" allow="fullscreen; autoplay" allowfullscreen></iframe>`; });
+        <div class="dlg-head"><h2>Minijuego: ${m.name}</h2><button type="button" class="dlg-close" aria-label="Cerrar">✕</button></div>
+        <p class="dlg-lede">${cfg.juego}</p>
+        <div class="screen" id="dlg-game"><div class="screen-msg"><strong>${m.live ? "En desarrollo" : "Próximamente"}</strong><p>Podrás jugarlo aquí mismo, sin instalar nada.</p>${md.game ? `<button type="button" class="btn" id="dlg-start">Iniciar juego</button>` : ""}</div></div>`;
+      if (md.game) d.querySelector("#dlg-start").addEventListener("click", () => { d.querySelector("#dlg-game").innerHTML = `<iframe src="${md.game}" title="Minijuego de ${m.name}" allow="fullscreen; autoplay" allowfullscreen></iframe>`; });
     }
     d.querySelector(".dlg-close").addEventListener("click", () => d.close());
     d.showModal();
@@ -984,7 +1121,6 @@ const inmersiva = (() => {
     $("#im-opt-juego").addEventListener("click", () => openDialog("juego"));
     $("#im-opt-3d").addEventListener("click", () => setMode("inspect"));
     $("#im-back-options").addEventListener("click", () => setMode("options"));
-    document.querySelectorAll("[data-ipart]").forEach(b => b.addEventListener("click", () => highlight(b.getAttribute("aria-pressed") === "true" ? null : b.dataset.ipart)));
     const d = $("#im-dialog");
     d.addEventListener("click", e => { if (e.target === d) d.close(); });
     d.addEventListener("close", () => { d.innerHTML = ""; });
@@ -992,37 +1128,58 @@ const inmersiva = (() => {
 
   function loop(){
     requestAnimationFrame(loop);
-    if (stage().hidden) return;
+    if (stage().hidden || !current) return;
     const box = stage(), size = renderer.getSize(new THREE.Vector2());
     if (size.x !== box.clientWidth || size.y !== box.clientHeight) layout();
     const now = performance.now(), dt = Math.min(.1, (now - (loop.last || now)) / 1000); loop.last = now;
     if (tween) tween(now); else if (controls.enabled) controls.update();
-    if (pivot){
+    const md = models[current];
+    if (md && md.pivot){
       modelPos.lerp(modelGoal, 1 - Math.exp(-dt * 3.2));
       const bob = reduce || mode === "inspect" ? 0 : Math.sin(now / 900) * .05;
-      pivot.position.set(modelPos.x, modelPos.y + bob, modelPos.z);
+      md.pivot.position.set(modelPos.x, modelPos.y + bob, modelPos.z);
       if (!reduce && mode === "options"){
-        pivot.rotation.y += .0035;
-        rotors.forEach((r, i) => r.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(axisX, i ? -.32 : .32)));
+        md.pivot.rotation.y += .0035;
+        md.giro.forEach(([o, sp]) => o.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(V(1, 0, 0), sp)));
       }
     }
-    // Etiqueta de Jezero
-    const lbl = $("#im-jezero"), wp = jezero.getWorldPosition(V(0, 0, 0)), p = wp.clone().project(camera);
-    const n = wp.clone().sub(mars.position).normalize(), facing = n.dot(camera.position.clone().sub(wp).normalize()) > .1;
-    const vis = facing && p.z < 1 && Math.abs(p.x) < 1 && Math.abs(p.y) < 1 && mode === "options";
+    // Etiqueta del sitio
+    const sc = scenes[cfg.cuerpo], lbl = $("#im-sitio");
+    let vis = false;
+    if (sc && mode === "options"){
+      const anchor = sc.surface ? siteAnchor : sc.anchor;
+      const wp = anchor.getWorldPosition(V(0, 0, 0)), p = wp.clone().project(camera);
+      let facing = true;
+      if (sc.surface){ const n = wp.clone().sub(sc.mesh.getWorldPosition(V(0, 0, 0))).normalize(); facing = n.dot(camera.position.clone().sub(wp).normalize()) > .1; }
+      vis = facing && p.z < 1 && Math.abs(p.x) < .95 && Math.abs(p.y) < .95;
+      if (vis) lbl.style.transform = `translate(${(p.x * .5 + .5) * box.clientWidth}px,${(-p.y * .5 + .5) * box.clientHeight}px) translate(-13px,-50%)`;
+    }
     lbl.style.visibility = vis ? "visible" : "hidden";
-    if (vis) lbl.style.transform = `translate(${(p.x * .5 + .5) * box.clientWidth}px,${(-p.y * .5 + .5) * box.clientHeight}px) translate(-13px,-50%)`;
     renderer.render(scene, camera);
   }
 
   return {
-    enter(){
+    enter(m){
       const first = !inited;
       if (first) init();
       if (!renderer) return;
-      if (mode !== "options") setMode("options");
+      current = m.id; cfg = INMERSIVA[m.id];
+      fillPanel(m);
+      // Fondo
+      const sc = getScene(cfg.cuerpo);
+      for (const s of Object.values(scenes)) s.group.visible = s === sc;
+      starsSky.visible = sc.stars === starsSky; starsAll.visible = sc.stars === starsAll;
+      if (sc.surface){
+        sc.mesh.quaternion.setFromUnitVectors(latLon(cfg.sitio.lat, cfg.sitio.lon, 1).normalize(), V(.12, .99, .06).normalize());
+        siteAnchor.position.copy(latLon(cfg.sitio.lat, cfg.sitio.lon, sc.R)); sc.mesh.add(siteAnchor);
+        $("#im-sitio span").textContent = cfg.sitio.label;
+      } else $("#im-sitio span").textContent = sc.label;
+      // Modelo
+      for (const [id, md] of Object.entries(models)) if (md && md.pivot) md.pivot.visible = id === m.id;
+      $("#im-loading").hidden = !!(models[m.id] && models[m.id].pivot); $("#im-loading").textContent = "Cargando modelo 3D…";
+      loadModel(m.id);
       layout();
-      // Descenso de entrada: desde la órbita hasta la vista del equipo
+      setMode("options", true); highlight(null);
       camera.position.copy(poses.enter.cam); controls.target.copy(poses.enter.tgt); camera.lookAt(controls.target);
       modelPos.copy(poses.options.model).add(V(0, 1.6, 0));
       tweenTo(poses.options, reduce ? 1 : 2300);
@@ -1035,7 +1192,7 @@ const inmersiva = (() => {
 function route(){
   const h = location.hash.slice(1);
   const mission = MISSIONS.find(m => m.id === h);
-  const immersive = mission && mission.id === "ingenuity";
+  const immersive = !!mission;
   const name = immersive ? "inmersiva" : mission ? "mision" : (["misiones", "explorar", "creditos"].includes(h) ? h : "inicio");
   for (const v of ["inicio", "explorar", "misiones", "mision", "inmersiva", "creditos"]) $("#view-" + v).hidden = name !== v;
   $("#site-header").hidden = name === "inicio";
@@ -1043,7 +1200,7 @@ function route(){
   document.body.classList.toggle("on-intro", name === "inicio");
   const d = $("#im-dialog"); if (d.open) d.close();
   if (name === "explorar") explore.enter();
-  if (immersive){ inmersiva.enter(); document.title = "Ingenuity | Mission Relics"; }
+  if (immersive){ inmersiva.enter(mission); document.title = `${mission.name} | Mission Relics`; }
   else if (mission){ renderMission(mission); document.title = `${mission.name} | Mission Relics`; }
   else document.title = { misiones:"Cronología | Mission Relics", explorar:"Explorar | Mission Relics", creditos:"Créditos | Mission Relics" }[name] || "Mission Relics";
   if (!immersive) setTimeout(() => warp.off(), 120);
